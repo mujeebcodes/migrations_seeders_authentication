@@ -34,5 +34,10 @@ UserSchema.pre("insertMany", async function (next, docs) {
   next();
 });
 
+UserSchema.methods.isValidPassword = async function (password) {
+  const compare = await bcrypt.compare(password, this.password);
+  return compare;
+};
+
 const UserModel = mongoose.model("users", UserSchema);
 module.exports = UserModel;
