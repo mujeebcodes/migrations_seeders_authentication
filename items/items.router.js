@@ -1,8 +1,10 @@
 const express = require("express");
+const tokenAuth = require("../middlewares/bearerTokenAuth");
+const getItems = require("./items.controller");
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.end("Get items");
-});
+router.use(tokenAuth);
+
+router.get("/", getItems);
 
 module.exports = router;
