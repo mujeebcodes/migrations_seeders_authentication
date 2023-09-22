@@ -1,4 +1,5 @@
 const express = require("express");
+require("dotenv").config();
 const app = express();
 const usersRouter = require("./users/users.router");
 const itemsRouter = require("./items/items.router");
@@ -17,7 +18,7 @@ app.get("/testuser", async (req, res) => {
   return res.status(200).json({ users });
 });
 
-const PORT = 3000;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
