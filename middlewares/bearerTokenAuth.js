@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const UserModel = require("../models/users.model");
+const { User } = require("../models");
 require("dotenv").config();
 
 const tokenAuth = async (req, res, next) => {
@@ -12,7 +12,7 @@ const tokenAuth = async (req, res, next) => {
     }
     const token = header.split(" ")[1];
     const decoded = await jwt.verify(token, process.env.JWT_SECRET);
-    const user = await UserModel.findById({ _id: decoded._id });
+    const user = await User.findOne({ where: { id: decoded.id } });
     if (!user) {
       return res.status(401).json({
         message: "You are not authorized",

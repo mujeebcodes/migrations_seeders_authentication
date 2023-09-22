@@ -1,19 +1,26 @@
+const { v4: uuidv4 } = require("uuid");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
-const UserModel = require("../models/users.model");
+const { User } = require("../models");
 
 const createUser = async (req, res) => {
   try {
-    const existingUser = await UserModel.findOne({ email: req.body.email });
+    const existingUser = await User.findOne({
+      where: { email: req.body.email },
+    });
     if (existingUser) {
       return res.status(409).json({
         message: "User already exists, please login",
       });
     }
-    const newUser = await UserModel.create(req.body);
+
+    const userDetails = { id: uuidv4(), ...req.body };
+
+    const newUser = await User.create(userDetails);
 
     const token = jwt.sign(
-      { _id: newUser._id, email: newUser.email },
+      { id: newUser.id, email: newUser.email },
       process.env.JWT_SECRET,
       {
         expiresIn: process.env.LOGIN_EXPIRES,
@@ -31,17 +38,19 @@ const createUser = async (req, res) => {
 
 const loginUser = async (req, res) => {
   const providedDetails = req.body;
-  const userInDb = await UserModel.findOne({ email: providedDetails.email });
+  const userInDb = await User.findOne({
+    where: { email: providedDetails.email },
+  });
   if (!userInDb) {
     return res.status(404).json({
       message: "user not found",
     });
   }
 
-  const validPassword = await userInDb.isValidPassword(
-    providedDetails.password
+  const validPassword = await bcrypt.compare(
+    providedDetails.password,
+    userInDb.password
   );
-
   if (!validPassword) {
     return res.status(422).json({
       message: "Email and/or password not correct",
@@ -49,7 +58,7 @@ const loginUser = async (req, res) => {
   }
 
   const token = await jwt.sign(
-    { _id: userInDb._id, email: userInDb.email },
+    { id: userInDb.id, email: userInDb.email },
     process.env.JWT_SECRET,
     { expiresIn: process.env.LOGIN_EXPIRES }
   );

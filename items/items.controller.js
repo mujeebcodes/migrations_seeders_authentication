@@ -1,11 +1,14 @@
-const ItemModel = require("../models/items.model");
+const { Item } = require("../models");
 
 const getItems = async (req, res) => {
-  const items = await ItemModel.find({});
-  res.status(200).json({
-    message: "success",
-    data: { items },
-  });
+  try {
+    const items = await Item.findAll({});
+    return res.status(200).json({
+      items,
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 module.exports = getItems;
